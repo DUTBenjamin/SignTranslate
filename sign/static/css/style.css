@@ -1,0 +1,94 @@
+/* 重置所有浮动和定位 */
+* {
+    float: none !important;
+    position: static !important;
+}
+
+/* 主容器 */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* 行布局 */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* 列布局 */
+.col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    padding: 15px;
+}
+
+.col-lg-8 {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%;
+    padding: 15px;
+}
+
+.col-lg-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 15px;
+}
+
+/* 卡片布局 */
+.card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px;
+}
+
+/* 按钮容器 */
+.translation-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* 结果容器 */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 确保内容不溢出 */
+.info-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.translation-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 小屏幕时列变为全宽 */
+@media (max-width: 768px) {
+    .col-lg-4, .col-lg-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

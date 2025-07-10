@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+  <!-- 头部内容与continuous.html相同 -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我们 - 手势识别系统</title>
+  <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4cc9f0;
+      --dark-color: #1d3557;
+      --light-color: #f8f9fa;
+      --text-color: #e0e0e0;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+            footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+    /* 左侧导航栏样式 - 保持不变 */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 250px;
+      background: rgba(29, 53, 87, 0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+    }
+    
+    .logo-container {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+    }
+
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-links li {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem 1.2rem;
+      color: var(--light-color);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      background: rgba(67, 97, 238, 0.3);
+    }
+
+    .nav-links a.active {
+      background: var(--primary-color);
+    }
+
+    .nav-links i {
+      margin-right: 0.8rem;
+      font-size: 1.2rem;
+    }
+
+    .app-container {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      padding: 2rem;
+    }
+
+    /* 关于我们页面特定样式 */
+    .header {
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent-color);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      color: var(--text-color);
+      opacity: 0.9;
+    }
+
+    /* 团队成员卡片 */
+    .team-section {
+      margin-bottom: 3rem;
+    }
+
+    .team-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .team-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .team-card .card-img-top {
+      height: 250px;
+      object-fit: cover;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .team-card .card-body {
+      padding: 1.5rem;
+    }
+
+    .team-card .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .team-card .text-muted {
+      color: var(--text-color) !important;
+      opacity: 0.8;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .team-card .card-text {
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .social-links a {
+      color: var(--text-color);
+      font-size: 1.2rem;
+      transition: color 0.3s ease;
+    }
+
+    .social-links a:hover {
+      color: var(--accent-color);
+    }
+
+    /* 项目介绍部分 */
+    .about-section {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .about-section h3 {
+      color: var(--accent-color);
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    .about-section p {
+      color: var(--text-color);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-size: 1.05rem;
+    }
+
+    .about-section ul {
+      padding-left: 1.5rem;
+    }
+
+    .about-section li {
+      color: var(--text-color);
+      margin-bottom: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .about-section strong {
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 992px) {
+      .app-container {
+        padding: 1.5rem;
+      }
+      
+      .team-card .card-img-top {
+        height: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem;
+      }
+      
+      .app-container {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+      }
+      
+      .logo-container {
+        margin-bottom: 1rem;
+      }
+      
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      .nav-links li {
+        margin-bottom: 0;
+      }
+      
+      .nav-links a {
+        padding: 0.5rem 1rem;
+      }
+      
+      .header {
+        margin-bottom: 2rem;
+      }
+
+      footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 左侧导航栏 -->
+  <div class="sidebar">
+    <div class="logo-container">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+            <h4>双向手语翻译系统</h4>
+            <p>基于ASL实现手语双向翻译，帮助残障人士与世界沟通</p>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{% url 'sign_app:realtime' %}"><i class="bi bi-camera"></i> 孤立手语识别</a></li>
+      <li><a href="{% url 'sign_app:continuous' %}"><i class="bi bi-collection-play"></i> 连续手语翻译</a></li>
+      <li><a href="{% url 'sign_app:animation' %}"><i class="bi bi-play-circle"></i> 手语动画生成</a></li>
+            <li><a href="{% url 'sign_app:image_recognition' %}"><i class="bi bi-images"></i> 中文手语图片识别</a></li>
+      <li><a href="{% url 'sign_app:video_recognition' %}"><i class="bi bi-film"></i> 中文手语视频识别</a></li>
+        <li><a href="{% url 'sign_app:technology' %}"><i class="bi bi-lightbulb"></i> 技术原理</a></li>
+      <li><a href="{% url 'sign_app:about' %}" class="active"><i class="bi bi-people"></i> 关于我们</a></li>
+    </ul>
+  </div>
+
+  <div class="app-container">
+    <div class="header">
+      <h1>关于我们</h1>
+      <p>双向手语翻译系统开发团队</p>
+    </div>
+
+    <!-- 团队成员部分 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <div class="team-section">
+      <div class="row g-4">
+                <!-- 团队成员1 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="card team-card">
+            <div class="card-body text-center">
+              <h4 class="card-title">王世强</h4>
+              <p class="card-text text-muted">算法工程师</p>
+              <p class="card-text">负责系统架构设计和核心算法开发</p>
+              <div class="social-links">
+                <a href="https://github.com/DUTBenjamin" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://blog.csdn.net/Aiden3122" target="_blank" title="CSDN"><i class="fab fa-dev"></i></a>
+                <a href="https://space.bilibili.com/439338616" target="_blank" title="Bilibili"><i class="fab fa-bilibili"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 团队成员2 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="card team-card">
+            <div class="card-body text-center">
+              <h4 class="card-title">张恒瑜</h4>
+              <p class="card-text text-muted">前端开发工程师</p>
+              <p class="card-text">负责用户界面设计和交互开发，专注于无障碍交互体验</p>
+              <div class="social-links">
+                <a href="https://github.com/happyzhanghengyu0" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://blog.csdn.net/A202313011" target="_blank" title="CSDN"><i class="fab fa-dev"></i></a>
+                <a href="https://space.bilibili.com/1338568272" target="_blank" title="Bilibili"><i class="fab fa-bilibili"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+                <!-- 团队成员3 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="card team-card">
+            <div class="card-body text-center">
+              <h4 class="card-title">王睿琦</h4>
+              <p class="card-text text-muted">项目负责人/后端开发工程师</p>
+              <p class="card-text">负责服务器端逻辑和API开发，确保系统稳定高效运行</p>
+              <div class="social-links">
+                <a href="https://github.com/WRQ123567" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://blog.csdn.net/YGMQDTF" target="_blank" title="CSDN"><i class="fab fa-dev"></i></a>
+                <a href="https://space.bilibili.com/320872423" target="_blank" title="Bilibili"><i class="fab fa-bilibili"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 项目介绍部分 -->
+    <div class="about-section">
+      <h3>项目介绍</h3>
+      <p>手势识别系统是一个基于深度学习的手语识别平台，旨在帮助聋哑人士与普通人进行无障碍交流。系统支持26个英文字母和常用手势的识别，可实现连续手语翻译功能。</p>
+      <p>我们的使命是通过技术创新消除沟通障碍，让手语识别更加准确、自然和易于使用。系统采用先进的计算机视觉和深度学习算法，能够实时识别复杂的手势动作，并将其转换为文字或语音输出。</p>
+    </div>
+
+    <!-- 技术栈部分 -->
+    <div class="about-section">
+      <h3>技术栈</h3>
+      <ul>
+        <li><strong>前端</strong>: HTML5, CSS3, JavaScript, Bootstrap, WebRTC</li>
+        <li><strong>后端</strong>: Django, Python, RESTful API, WebSocket</li>
+        <li><strong>算法</strong>: MediaPipe, PyTorch, CNN, LSTM, Transformer</li>
+        <li><strong>数据存储</strong>: PostgreSQL, Redis</li>
+        <li><strong>部署</strong>: Docker, Nginx, Gunicorn, AWS</li>
+      </ul>
+    </div>
+
+    <!-- 应用场景部分 -->
+    <div class="about-section">
+      <h3>应用场景</h3>
+      <ul>
+        <li><strong>特殊教育：</strong> 帮助聋哑学生与教师、同学实现无障碍沟通，提升课堂互动与学习效率。</li>
+        <li><strong>医疗服务：</strong> 医护人员可通过系统与听障患者顺畅交流，提升诊疗体验和安全性。</li>
+        <li><strong>公共服务：</strong> 在政务大厅、银行、车站等场所，为听障人士提供便捷的咨询与办理服务。</li>
+        <li><strong>家庭沟通：</strong> 促进家庭成员间的交流，帮助听障人士更好地融入家庭生活。</li>
+        <li><strong>社会活动：</strong> 支持听障人士参与各类社会活动、讲座、培训等，拓展社交圈。</li>
+      </ul>
+    </div>
+  </div>
+
+          <footer>
+            <p style="text-align:center;">手势识别系统 &copy; 2025 | 基于Django和TensorFlow Lite构建</p>
+        </footer>
+</body>
+</html>

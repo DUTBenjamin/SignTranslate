@@ -1,0 +1,518 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- 头部内容与realtime.html相同 -->
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双向手语翻译系统</title>
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* 左侧导航栏样式 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 250px;
+            background: rgba(29, 53, 87, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            color: var(--light-color);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(67, 97, 238, 0.3);
+        }
+
+        .nav-links a.active {
+            background: var(--primary-color);
+        }
+
+        .nav-links i {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --dark-color: #1d3557;
+            --light-color: #f8f9fa;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);
+            color: var(--light-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 2rem;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin-left: 270px; /* 留出导航栏空间 */
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            background: rgba(29, 53, 87, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+            height: 100%; /* 使卡片高度相同 */
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background: rgba(67, 97, 238, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        #videoFeed {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-stop {
+            background: #e63946;
+        }
+
+        .btn-stop:hover {
+            background: #d62828;
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .recognition-result {
+            background: rgba(76, 201, 240, 0.15);
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .gesture-icon {
+            font-size: 3rem;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex-grow: 1;
+        }
+
+        .gesture-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .gesture-description {
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+
+        .confidence-meter {
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: linear-gradient(90deg, #e63946, #f1faee, #a8dadc, #457b9d);
+            border-radius: 10px;
+            width: 0;
+            transition: width 0.5s ease;
+        }
+
+        .history-card {
+            height: 100%;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-gesture {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .history-time {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-left: auto;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e63946;
+            margin-right: 0.5rem;
+        }
+
+        .status-indicator.active {
+            background: #2a9d8f;
+            box-shadow: 0 0 10px #2a9d8f;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                margin-left: 0;
+                padding-top: 1rem;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .recognition-result {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .gesture-icon {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="sidebar">
+          <div class="logo-container">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+            <h4>双向手语翻译系统</h4>
+            <p>基于ASL实现手语双向翻译，帮助残障人士与世界沟通</p>
+        </div>
+    <!-- 导航栏 -->
+    <ul class="nav-links">
+      <!-- 其他导航项... -->
+              <li><a href="{% url 'sign_app:realtime' %}"><i class="bi bi-camera"></i> 孤立手语识别</a></li>
+      <li><a href="{% url 'sign_app:continuous' %}"><i class="bi bi-collection-play"></i> 连续手语翻译</a></li>
+      <li><a href="{% url 'sign_app:animation' %}"><i class="bi bi-play-circle"></i> 手语动画生成</a></li>
+      <li><a href="{% url 'sign_app:image_recognition' %}"><i class="bi bi-images"></i> 中文手语图片识别</a></li>
+      <li><a href="{% url 'sign_app:video_recognition' %}" class="active"><i class="bi bi-film"></i> 中文手语视频识别</a></li>
+      <!-- 其他导航项... -->
+      <li><a href="{% url 'sign_app:technology' %}"><i class="bi bi-lightbulb"></i> 技术原理</a></li>
+      <li><a href="{% url 'sign_app:about' %}"><i class="bi bi-people"></i> 关于我们</a></li>
+    </ul>
+  </div>
+
+  <div class="app-container">
+      <div class="header text-center mb-4">
+    <h1>中文手语视频识别</h1>
+    <p>上传包含手语动作的视频文件，系统将识别其中的手语内容</p>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          视频上传
+        </div>
+        <div class="card-body">
+          <form id="videoUploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="videoFile" class="form-label">选择视频文件（MP4格式）</label>
+              <input class="form-control" type="file" id="videoFile" name="video" accept="video/mp4">
+            </div>
+            <button type="button" id="uploadBtn" class="btn btn-primary">
+              <i class="bi bi-upload"></i> 上传并识别
+            </button>
+          </form>
+
+          <div class="mt-4" id="videoPreview">
+            <video id="previewPlayer" controls class="w-100"></video>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          识别结果
+        </div>
+        <div class="card-body">
+          <div class="results-container">
+            <div class="recognition-result">
+              <div class="result-content">
+                <div class="gesture-name" id="resultLabel">等待识别结果...</div>
+                <div class="gesture-description" id="confidenceLevel">置信度: 0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <button id="clearResultsBtn" class="btn btn-secondary">
+              <i class="bi bi-trash"></i> 清除结果
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const videoFileInput = document.getElementById('videoFile');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const previewPlayer = document.getElementById('previewPlayer');
+    const resultLabel = document.getElementById('resultLabel');
+    const confidenceLevel = document.getElementById('confidenceLevel');
+    const clearResultsBtn = document.getElementById('clearResultsBtn');
+
+    // 预览视频
+    videoFileInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        const file = this.files[0];
+        const videoURL = URL.createObjectURL(file);
+        previewPlayer.src = videoURL;
+      }
+    });
+
+    // 上传视频并识别
+    uploadBtn.addEventListener('click', function() {
+      const file = videoFileInput.files[0];
+      if (!file) {
+        alert('请选择视频文件');
+        return;
+      }
+
+      // 创建FormData并发送请求
+      const formData = new FormData();
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      formData.append('video', file);
+
+      // 显示加载状态
+      resultLabel.textContent = '处理中...';
+      confidenceLevel.textContent = '请稍候';
+
+      // 发送AJAX请求
+      fetch('{% url "sign_app:process_video" %}', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          resultLabel.textContent = '识别错误';
+          confidenceLevel.textContent = data.error;
+        } else {
+          resultLabel.textContent = data.result;
+          confidenceLevel.textContent = `置信度: ${data.confidence}`;
+        }
+      })
+      .catch(error => {
+        console.error('请求失败:', error);
+        resultLabel.textContent = '请求失败';
+        confidenceLevel.textContent = '请检查网络连接';
+      });
+    });
+
+    // 清除结果
+    clearResultsBtn.addEventListener('click', function() {
+      resultLabel.textContent = '等待识别结果...';
+      confidenceLevel.textContent = '置信度: 0%';
+      videoFileInput.value = '';
+      previewPlayer.src = '';
+    });
+  });
+</script>
+

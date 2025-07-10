@@ -1,0 +1,931 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双向手语翻译系统</title>
+  <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4cc9f0;
+      --dark-color: #1d3557;
+      --light-color: #f8f9fa;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);
+      color: var(--light-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 250px;
+      background: rgba(29, 53, 87, 0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+    }
+
+    .nav-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-links li {
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem 1.2rem;
+      color: var(--light-color);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      background: rgba(67, 97, 238, 0.3);
+    }
+
+    .nav-links a.active {
+      background: var(--primary-color);
+    }
+
+    .nav-links i {
+      margin-right: 0.8rem;
+      font-size: 1.2rem;
+    }
+
+    .app-container {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      padding: 1rem;
+      position: relative;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
+      transition: transform 0.3s ease;
+      height: 100%;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: auto;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: none;
+      position: static;
+      width: 100%;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-header {
+      background: rgba(67, 97, 238, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 15px 15px 0 0 !important;
+      color: #4cd2f0 !important; /* 统一为#4cd2f0 */
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .header h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      opacity: 0.9;
+    }
+
+    .btn {
+      background: var(--primary-color);
+      border: none;
+      border-radius: 50px;
+      padding: 0.8rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: var(--secondary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .animation-preview {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .animation-preview video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .placeholder-text {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      position: absolute;
+      z-index: 1;
+    }
+
+    .placeholder-text i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .animation-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .progress-container {
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 0.5rem;
+      opacity: 0.7;
+    }
+
+    /* 加载动画 */
+    .loader {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--accent-color);
+      animation: spin 1s ease-in-out infinite;
+      margin: 20px auto;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      height: calc(100vh - 200px); /* 设置行高度为视口高度减去头部高度 */
+      min-height: 500px; /* 最小高度保证在内容较少时也能显示 */
+    }
+
+    .col-lg-6 {
+      height: 100%; /* 使两列都填满行高 */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      flex: 1; /* 使卡片填满列高 */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* 防止内容溢出 */
+    }
+
+    .card-body {
+      flex: 1; /* 使卡片内容区域填满卡片 */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* 防止内容溢出 */
+    }
+
+    /* 调整文本输入框容器 */
+    .mb-3 {
+      flex: 1; /* 让输入框容器填满可用空间 */
+      display: flex;
+      flex-direction: column;
+      min-height: 0; /* 允许flex子元素收缩 */
+    }
+
+    /* 调整文本输入框高度 */
+    textarea.form-control {
+      flex: 1; /* 填满可用空间 */
+      min-height: 200px; /* 减小最小高度 */
+      max-height: 400px; /* 设置最大高度 */
+      resize: vertical; /* 只允许垂直调整大小 */
+      overflow-y: auto; /* 内容过多时显示滚动条 */
+    }
+
+    /* 调整动画预览区域 */
+    .animation-preview {
+      flex: 1; /* 填满可用空间 */
+      height: auto; /* 高度自动调整 */
+      padding-bottom: 0; /* 移除原来的百分比设置 */
+      min-height: 300px; /* 设置最小高度 */
+      max-height: 500px; /* 设置最大高度 */
+      overflow: hidden; /* 防止内容溢出 */
+    }
+
+    /* 确保按钮区域不被压缩 */
+    .btn {
+      flex-shrink: 0; /* 防止按钮被压缩 */
+      margin-top: 1rem; /* 添加顶部间距 */
+    }
+
+    /* 进度条和加载器样式调整 */
+    .progress-container {
+      flex-shrink: 0; /* 防止被压缩 */
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .loader {
+      flex-shrink: 0; /* 防止被压缩 */
+      display: none;
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--accent-color);
+      animation: spin 1s ease-in-out infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      
+      .app-container {
+        margin-left: 0;
+        width: 100%;
+      }
+      
+      .animation-controls {
+        flex-direction: column;
+      }
+      
+      .animation-controls .btn {
+        width: 100%;
+      }
+      
+      .row {
+        height: auto;
+        min-height: auto;
+      }
+      
+      .col-lg-6 {
+        height: auto;
+        margin-bottom: 2rem;
+      }
+      
+      .card {
+        height: auto;
+      }
+      
+      textarea.form-control {
+        min-height: 150px;
+        max-height: 300px;
+      }
+      
+      .animation-preview {
+        min-height: 200px;
+        max-height: 300px;
+      }
+    }
+    
+    /* 确保内容不会溢出 */
+    .card-body {
+      overflow: hidden;
+    }
+    
+    /* 优化按钮样式 */
+    .btn {
+      transition: all 0.3s ease;
+      border: none;
+      font-weight: 600;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* 优化提示框样式 */
+    .alert {
+      border-radius: 8px;
+      border: none;
+      font-weight: 500;
+    }
+    
+    .alert-success {
+      background: rgba(40, 167, 69, 0.2);
+      color: #28a745;
+    }
+    
+    .alert-warning {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+    
+    .alert-danger {
+      background: rgba(220, 53, 69, 0.2);
+      color: #dc3545;
+    }
+
+    .language-group .lang-btn {
+      min-width: 80px;
+      font-weight: 600;
+      border-width: 2px;
+      color: var(--primary-color);
+      background: var(--light-color);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+    .language-group .lang-btn.active, .language-group .lang-btn:active, .language-group .lang-btn:focus, .language-group .lang-btn:checked {
+      background: var(--primary-color) !important;
+      color: #fff !important;
+      border-color: var(--primary-color) !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+    .language-group .lang-btn:hover {
+      background: #e3eaff;
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .language-group {
+      margin-bottom: 10px;
+      justify-content: center;
+      display: flex;
+    }
+
+    /* 右上角浮动消息条 */
+    .floating-alert {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      min-width: 220px;
+      max-width: 350px;
+      z-index: 2000;
+      background: rgba(76,210,240,0.98);
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s, top 0.4s;
+      display: flex;
+      align-items: center;
+      gap: 0.7em;
+    }
+    .floating-alert.show {
+      opacity: 1;
+      pointer-events: auto;
+      top: 50px;
+    }
+    .floating-alert.success { background: rgba(76,210,140,0.98); }
+    .floating-alert.danger { background: rgba(220,53,69,0.98); }
+    .floating-alert.warning { background: rgba(255,193,7,0.98); color:#222; }
+    .floating-alert .bi { font-size:1.3em; }
+
+    /* 历史输入记录美化 */
+    #historyList .list-group-item {
+      background: transparent !important;
+      color: #fff;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+      border-radius: 0;
+      font-size: 1.1em;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    #historyList .list-group-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo-container">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+      <h4>双向手语翻译系统</h4>
+      <p>基于ASL实现手语双向翻译，帮助残障人士与世界沟通</p>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{% url 'sign_app:realtime' %}"><i class="bi bi-camera"></i> 孤立手语识别</a></li>
+      <li><a href="{% url 'sign_app:continuous' %}"><i class="bi bi-collection-play"></i> 连续手语翻译</a></li>
+      <li><a href="{% url 'sign_app:animation' %}" class="active"><i class="bi bi-play-circle"></i> 手语动画生成</a></li>
+           <li><a href="{% url 'sign_app:image_recognition' %}"><i class="bi bi-images"></i> 中文手语图片识别</a></li>
+      <li><a href="{% url 'sign_app:video_recognition' %}"><i class="bi bi-film"></i> 中文手语视频识别</a></li>
+        <li><a href="{% url 'sign_app:technology' %}"><i class="bi bi-lightbulb"></i> 技术原理</a></li>
+      <li><a href="{% url 'sign_app:about' %}"><i class="bi bi-people"></i> 关于我们</a></li>
+    </ul>
+  </div>
+
+  <div class="app-container">
+    <div class="header text-center mb-4">
+      <h1>手语动画生成</h1>
+      <p>输入文本，系统将自动生成对应的手语动画</p>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">文本输入</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <div class="mb-2 text-center">
+                <label class="form-label mb-2" style="font-weight:600; color:#fff;">选择语言</label>
+                <div class="btn-group language-group" role="group" aria-label="语言选择">
+                  <input type="radio" class="btn-check" name="lang" id="langEn" value="en" autocomplete="off" checked>
+                  <label class="btn btn-outline-primary lang-btn" for="langEn">英文</label>
+                  <input type="radio" class="btn-check" name="lang" id="langZh" value="zh" autocomplete="off">
+                  <label class="btn btn-outline-primary lang-btn" for="langZh">中文</label>
+                </div>
+              </div>
+              <textarea class="form-control" id="inputText" rows="8" placeholder="输入要翻译的文本..."></textarea>
+            </div>
+            <button id="generateBtn" class="btn btn-primary w-100">
+              <i class="bi bi-play-circle"></i> 生成动画
+            </button>
+            <div class="loader" id="loader"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">动画预览
+            <span id="symbolInfoBtn" style="cursor:pointer; color:#4cc9f0; font-size:1.3rem; margin-left:8px;" title="符号说明">
+              <i class="bi bi-info-circle"></i>
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="animation-preview" id="animationPreview">
+              <div class="placeholder-text">
+                <i class="bi bi-play-btn"></i>
+                <p>生成的动画将显示在这里</p>
+              </div>
+            </div>
+            <div class="animation-controls mt-3" id="animationControls" style="display: none;">
+              <button class="btn btn-secondary" id="rewindBtn">
+                <i class="bi bi-skip-backward"></i> 重播
+              </button>
+              <button class="btn btn-primary" id="playPauseBtn">
+                <i class="bi bi-play"></i> 播放
+              </button>
+              <button class="btn btn-secondary" id="downloadBtn">
+                <i class="bi bi-download"></i> 下载
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 历史记录区（移到下方，简化为只显示输入过的词） -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card" style="height:420px;">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>历史输入记录</span>
+            <button id="clearHistoryBtn" class="btn btn-sm btn-danger" style="font-size:1em;">清除历史记录</button>
+          </div>
+          <div class="card-body d-flex flex-column" style="height:320px;">
+            <ul id="historyList" class="list-group flex-grow-1" style="background:rgba(255,255,255,0.05);border-radius:8px;max-width:100%;height:100%;overflow-y:auto;"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 符号说明弹窗 -->
+  <div class="modal fade" id="symbolInfoModal" tabindex="-1" aria-labelledby="symbolInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background:rgba(255,255,255,0.95);border-radius:12px;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="symbolInfoModalLabel" style="color:#4361ee;">符号说明</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img src="{% static 'images/symbol_desc.png' %}" alt="符号说明" style="max-width:100%;height:auto;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右上角浮动消息条 -->
+  <div id="floatingAlert" class="floating-alert" style="display:none;"></div>
+
+  <div id="loaderOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:3000;justify-content:center;align-items:center;">
+    <div class="loader" style="display:block;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const generateBtn = document.getElementById('generateBtn');
+      const inputText = document.getElementById('inputText');
+      const animationPreview = document.getElementById('animationPreview');
+      const animationControls = document.getElementById('animationControls');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const rewindBtn = document.getElementById('rewindBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      
+      let currentVideoUrl = null;
+      let currentVideoElement = null;
+      let isGenerating = false;
+
+      // 修改生成动画按钮点击事件
+      generateBtn.addEventListener('click', async function() {
+        if (isGenerating) return;
+        
+        const text = inputText.value.trim();
+        if (!text) {
+          showAlert('请输入要翻译的文本', 'warning');
+          return;
+        }
+        
+        // 获取语言参数
+        const lang = document.querySelector('input[name="lang"]:checked').value;
+        
+        // 重置状态
+        resetVideoPlayer();
+        isGenerating = true;
+        
+        // 显示加载状态
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="bi bi-hourglass"></i> 生成中...';
+        document.getElementById('loaderOverlay').style.display = 'flex';
+        
+        try {
+          const formData = new FormData();
+          formData.append('text', text);
+          formData.append('lang', lang);
+          formData.append('csrfmiddlewaretoken', getCSRFToken());
+          
+          const response = await fetch('{% url "sign_app:generate-animation" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: '生成失败，请检查输入文本' }));
+            throw new Error(errorData.error || '生成失败');
+          }
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          
+          // 动画生成完成弹窗
+          showAlert('动画生成完成！', 'success');
+          
+          // 使用返回的视频URL
+          currentVideoUrl = data.video_url;
+          
+          // 显示生成的视频
+          animationPreview.innerHTML = `
+            <video id="generatedVideo" style="width:100%; height:100%; object-fit: contain;" controls>
+              <source src="${currentVideoUrl}" type="video/mp4">
+              您的浏览器不支持视频播放
+            </video>
+          `;
+          
+          currentVideoElement = document.getElementById('generatedVideo');
+          animationControls.style.display = 'block';
+          
+          currentVideoElement.addEventListener('play', function() {
+            playPauseBtn.innerHTML = '<i class="bi bi-pause"></i> 暂停';
+          });
+          
+          currentVideoElement.addEventListener('pause', function() {
+            playPauseBtn.innerHTML = '<i class="bi bi-play"></i> 播放';
+          });
+          
+          currentVideoElement.addEventListener('error', function() {
+            showAlert('视频加载失败，请尝试重新生成', 'danger');
+            animationControls.style.display = 'none';
+          });
+          
+        } catch (error) {
+          console.error('生成动画错误:', error);
+          showAlert('生成失败: ' + error.message, 'danger');
+          animationPreview.innerHTML = `
+            <div class="placeholder-text">
+              <i class="bi bi-exclamation-triangle"></i>
+              <p>动画生成失败</p>
+              <small>${error.message}</small>
+            </div>
+          `;
+        } finally {
+          isGenerating = false;
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = '<i class="bi bi-play-circle"></i> 生成动画';
+          // 隐藏全屏loader
+          document.getElementById('loaderOverlay').style.display = 'none';
+        }
+      });
+
+      // 右上角浮动消息提示
+      function showAlert(message, type) {
+        const alertDiv = document.getElementById('floatingAlert');
+        if (!alertDiv) return;
+        let icon = '';
+        switch(type) {
+          case 'warning': icon = 'bi-exclamation-triangle'; break;
+          case 'danger': icon = 'bi-x-circle'; break;
+          case 'success': icon = 'bi-check-circle'; break;
+          default: icon = 'bi-info-circle';
+        }
+        alertDiv.innerHTML = `<i class="bi ${icon}"></i> ${message}`;
+        alertDiv.className = `floating-alert show ${type}`;
+        alertDiv.style.display = 'flex';
+        setTimeout(() => {
+          alertDiv.classList.remove('show');
+          setTimeout(()=>{alertDiv.style.display='none';}, 400);
+        }, 3000);
+      }
+
+      // 播放/暂停按钮
+      playPauseBtn.addEventListener('click', function() {
+        if (currentVideoElement && currentVideoElement.readyState >= 2) {
+          if (currentVideoElement.paused) {
+            currentVideoElement.play().catch(function(error) {
+              console.error('播放失败:', error);
+              showAlert('视频播放失败', 'danger');
+            });
+            playPauseBtn.innerHTML = '<i class="bi bi-pause"></i> 暂停';
+          } else {
+            currentVideoElement.pause();
+            playPauseBtn.innerHTML = '<i class="bi bi-play"></i> 播放';
+          }
+        } else {
+          showAlert('视频尚未加载完成', 'warning');
+        }
+      });
+
+      // 重播按钮
+      rewindBtn.addEventListener('click', function() {
+        if (currentVideoElement && currentVideoElement.readyState >= 2) {
+          currentVideoElement.currentTime = 0;
+          currentVideoElement.play().catch(function(error) {
+            console.error('重播失败:', error);
+            showAlert('视频重播失败', 'danger');
+          });
+          playPauseBtn.innerHTML = '<i class="bi bi-pause"></i> 暂停';
+        } else {
+          showAlert('视频尚未加载完成', 'warning');
+        }
+      });
+
+      // 下载按钮
+      downloadBtn.addEventListener('click', function() {
+        if (currentVideoUrl) {
+          try {
+            const a = document.createElement('a');
+            a.href = currentVideoUrl;
+            a.download = '手语动画_' + new Date().toISOString().slice(0, 10) + '.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showAlert('下载已开始', 'success');
+          } catch (error) {
+            console.error('下载失败:', error);
+            showAlert('下载失败，请重试', 'danger');
+          }
+        } else {
+          showAlert('没有可下载的视频', 'warning');
+        }
+      });
+
+      // 重置视频播放器
+      function resetVideoPlayer() {
+        if (currentVideoUrl) {
+          URL.revokeObjectURL(currentVideoUrl);
+          currentVideoUrl = null;
+        }
+        if (currentVideoElement) {
+          currentVideoElement.remove();
+          currentVideoElement = null;
+        }
+        animationControls.style.display = 'none';
+        animationPreview.innerHTML = `
+          <div class="placeholder-text">
+            <i class="bi bi-play-btn"></i>
+            <p>生成的动画将显示在这里</p>
+          </div>
+        `;
+      }
+
+      // 获取CSRF令牌
+      function getCSRFToken() {
+        const cookieValue = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('csrftoken='))
+          ?.split('=')[1];
+        return cookieValue || '';
+      }
+
+      // 语言切换时清空输入框内容
+      const langRadios = document.querySelectorAll('input[name="lang"]');
+      langRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          inputText.value = '';
+        });
+      });
+
+      // 符号说明弹窗逻辑
+      const symbolInfoBtn = document.getElementById('symbolInfoBtn');
+      if(symbolInfoBtn){
+        symbolInfoBtn.addEventListener('click', function(){
+          const modal = new bootstrap.Modal(document.getElementById('symbolInfoModal'));
+          modal.show();
+        });
+      }
+
+      // 加载历史记录（可点击回显视频）
+      let lastHistoryRaw = [];
+      async function loadHistory() {
+        const historyList = document.getElementById('historyList');
+        if (!historyList) return;
+        historyList.innerHTML = '<li class="list-group-item text-center" style="background:transparent;color:#aaa;">加载中...</li>';
+        try {
+          const res = await fetch('/get_animation_history/');
+          const data = await res.json();
+          lastHistoryRaw = data.history || [];
+          if (lastHistoryRaw.length > 0) {
+            // 只保留唯一输入词，按最新顺序
+            const seen = new Set();
+            const uniqueTexts = lastHistoryRaw.filter(item => {
+              if (seen.has(item.text)) return false;
+              seen.add(item.text);
+              return true;
+            });
+            historyList.innerHTML = '';
+            uniqueTexts.forEach(item => {
+              const li = document.createElement('li');
+              li.className = 'list-group-item list-group-item-action';
+              li.style.background = 'rgba(255,255,255,0.12)';
+              li.style.cursor = 'pointer';
+              li.style.fontWeight = '500';
+              li.style.fontSize = '1.1em';
+              li.textContent = item.text;
+              li.title = '点击回放该词最近一次生成的视频';
+              li.addEventListener('click', function() {
+                // 找到该词最新一次生成的视频
+                const found = lastHistoryRaw.find(h => h.text === item.text);
+                if (found && found.video_file) {
+                  animationPreview.innerHTML = `
+                    <video id='generatedVideo' style='width:100%; height:100%; object-fit: contain;' controls>
+                      <source src='${found.video_file}' type='video/mp4'>
+                      您的浏览器不支持视频播放
+                    </video>
+                  `;
+                  currentVideoElement = document.getElementById('generatedVideo');
+                  animationControls.style.display = 'block';
+                }
+              });
+              historyList.appendChild(li);
+            });
+          } else {
+            historyList.innerHTML = '<li class="list-group-item text-center" style="background:transparent;color:#aaa;">暂无历史记录</li>';
+          }
+        } catch (e) {
+          historyList.innerHTML = '<li class="list-group-item text-center" style="background:transparent;color:#aaa;">加载失败</li>';
+        }
+      }
+      // 页面加载时自动加载历史
+      loadHistory();
+      // 生成动画后刷新历史
+      if (typeof generateBtn !== 'undefined') {
+        generateBtn.addEventListener('click', function() {
+          setTimeout(loadHistory, 2000);
+        });
+      }
+
+      // 清除历史记录按钮逻辑
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+      if(clearHistoryBtn){
+        clearHistoryBtn.addEventListener('click', async function(){
+          if(!confirm('确定要清除所有历史记录吗？')) return;
+          try{
+            const res = await fetch('/clear_history/', {method:'POST',headers:{'X-CSRFToken':getCSRFToken()}});
+            const data = await res.json();
+            if(data.success){
+              showAlert('历史记录已清空','success');
+              loadHistory();
+            }else{
+              showAlert('清空失败','danger');
+            }
+          }catch(e){
+            showAlert('清空失败','danger');
+          }
+        });
+      }
+    });
+  </script>
+
+  <footer>
+    <p style="text-align:center;">手势识别系统 &copy; 2025 | 基于Django和TensorFlow Lite构建</p>
+  </footer>
+</body>
+</html>
